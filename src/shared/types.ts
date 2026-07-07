@@ -29,6 +29,28 @@ export interface FolderScan {
   unsupportedCount: number;
 }
 
+export type QualityPreset = "conservative" | "balanced" | "aggressive";
+
+export interface ProcessingSettings {
+  candidateFps: number;
+  qualityPreset: QualityPreset;
+  copyStillImages: boolean;
+  filterBlur: boolean;
+  filterExposure: boolean;
+  filterDuplicates: boolean;
+  maxFramesPerVideo: number;
+}
+
+export const DEFAULT_PROCESSING_SETTINGS: ProcessingSettings = {
+  candidateFps: 3,
+  qualityPreset: "balanced",
+  copyStillImages: true,
+  filterBlur: true,
+  filterExposure: true,
+  filterDuplicates: true,
+  maxFramesPerVideo: 0,
+};
+
 export type ProgressStage =
   | "idle"
   | "preparing"
@@ -53,12 +75,14 @@ export interface VideoProcessingSummary {
   rejectedBlur: number;
   rejectedExposure: number;
   rejectedDuplicate: number;
+  rejectedLimit: number;
   warnings: string[];
 }
 
 export interface ProcessingSummary {
   sourceFolder: string;
   outputFolder: string;
+  settings: ProcessingSettings;
   copiedImages: number;
   videos: VideoProcessingSummary[];
   warnings: string[];
@@ -69,7 +93,10 @@ export interface ProcessingSummary {
 export interface RealityScanFramePrepApi {
   selectSourceFolder: () => Promise<FolderScan | null>;
   scanFolder: (sourceFolder: string) => Promise<FolderScan>;
-  runProcessing: (sourceFolder: string) => Promise<ProcessingSummary>;
+  runProcessing: (
+    sourceFolder: string,
+    settings?: ProcessingSettings,
+  ) => Promise<ProcessingSummary>;
   onProgress: (callback: (progress: ProcessingProgress) => void) => () => void;
 }
 

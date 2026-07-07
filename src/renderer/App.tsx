@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import type {
   FolderScan,
+  ProcessingSettings,
   ProcessingProgress,
   ProcessingSummary,
 } from "../shared/types";
+import { DEFAULT_PROCESSING_SETTINGS } from "../shared/types";
 
 const initialProgress: ProcessingProgress = {
   stage: "idle",
@@ -16,6 +18,7 @@ export function App() {
   const [summary, setSummary] = useState<ProcessingSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [settings, setSettings] = useState<ProcessingSettings>(DEFAULT_PROCESSING_SETTINGS);
 
   useEffect(() => {
     return window.realityScanFramePrep.onProgress(setProgress);
@@ -58,7 +61,7 @@ export function App() {
     setSummary(null);
     setIsRunning(true);
     try {
-      const result = await window.realityScanFramePrep.runProcessing(scan.sourceFolder);
+      const result = await window.realityScanFramePrep.runProcessing(scan.sourceFolder, settings);
       setSummary(result);
       const refreshed = await window.realityScanFramePrep.scanFolder(scan.sourceFolder);
       setScan(refreshed);
@@ -100,6 +103,12 @@ export function App() {
             <Stat label="Unsupported" value={scan?.unsupportedCount ?? 0} title={unsupportedTooltip} />
             <Stat label="Total inputs" value={totalInputs} />
           </div>
+
+          <AdvancedSettings
+            settings={settings}
+            onChange={setSettings}
+            disabled={isRunning}
+          />
 
           <div className="run-row">
             <button
@@ -151,6 +160,131 @@ function OverwriteWarningIcon() {
   );
 }
 
+function AdvancedSettings({
+  settings,
+  onChange,
+  disabled,
+}: {
+  settings: ProcessingSettings;
+  onChange: (settings: ProcessingSettings) => void;
+  disabled: boolean;
+}) {
+  function update<K extends keyof ProcessingSettings>(key: K, value: ProcessingSettings[K]) {
+    onChange({ ...settings, [key]: value });
+  }
+
+  return (
+    <details className="advanced-settings">
+      <summary>
+        <span>Advanced processing</span>
+        <small>{settingsLabel(settings)}</small>
+      </summary>
+
+      <div className="advanced-grid">
+        <label className="field">
+          <span>Preset</span>
+          <select
+            value={settings.qualityPreset}
+            onChange={(event) =>
+              update("qualityPreset", event.target.value as ProcessingSettings["qualityPreset"])
+            }
+            disabled={disabled}
+          >
+            <option value="conservative">Conservative - keep more frames</option>
+            <option value="balanced">Balanced - default</option>
+            <option value="aggressive">Aggressive - fewer frames</option>
+          </select>
+        </label>
+
+        <label className="field">
+          <span>Extract FPS</span>
+          <input
+            type="number"
+            min={1}
+            max={10}
+            value={settings.candidateFps}
+            onChange={(event) => update("candidateFps", Number(event.target.value))}
+            disabled={disabled}
+          />
+        </label>
+
+        <label className="field">
+          <span>Max frames per video</span>
+          <input
+            type="number"
+            min={0}
+            max={5000}
+            value={settings.maxFramesPerVideo}
+            onChange={(event) => update("maxFramesPerVideo", Number(event.target.value))}
+            disabled={disabled}
+          />
+        </label>
+
+        <div className="toggle-list">
+          <Toggle
+            label="Copy still images"
+            checked={settings.copyStillImages}
+            disabled={disabled}
+            onChange={(checked) => update("copyStillImages", checked)}
+          />
+          <Toggle
+            label="Reject blurry frames"
+            checked={settings.filterBlur}
+            disabled={disabled}
+            onChange={(checked) => update("filterBlur", checked)}
+          />
+          <Toggle
+            label="Reject bad exposure"
+            checked={settings.filterExposure}
+            disabled={disabled}
+            onChange={(checked) => update("filterExposure", checked)}
+          />
+          <Toggle
+            label="Reject near duplicates"
+            checked={settings.filterDuplicates}
+            disabled={disabled}
+            onChange={(checked) => update("filterDuplicates", checked)}
+          />
+        </div>
+      </div>
+
+      <p className="advanced-hint">
+        Use Conservative when RealityScan has trouble aligning. Use Aggressive when alignment is
+        stable and imports are too large. Set max frames to 0 for no cap.
+      </p>
+    </details>
+  );
+}
+
+function Toggle({
+  label,
+  checked,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  disabled: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="toggle">
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function settingsLabel(settings: ProcessingSettings): string {
+  const maxFrames = settings.maxFramesPerVideo > 0 ? `, max ${settings.maxFramesPerVideo}` : "";
+  return `${settings.qualityPreset}, ${settings.candidateFps} fps${maxFrames}`;
+}
+
 function InfoBlock({ label, value }: { label: string; value: string }) {
   return (
     <div className="info-block">
@@ -200,8 +334,8 @@ function SummaryPanel({ summary }: { summary: ProcessingSummary }) {
               </span>
             </div>
             <span>
-              Blur {video.rejectedBlur} · Exposure {video.rejectedExposure} · Duplicate{" "}
-              {video.rejectedDuplicate}
+              Blur {video.rejectedBlur} - Exposure {video.rejectedExposure} - Duplicate{" "}
+              {video.rejectedDuplicate} - Limit {video.rejectedLimit}
             </span>
           </div>
         ))}

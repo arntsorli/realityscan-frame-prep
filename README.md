@@ -18,6 +18,7 @@ RealityScan can import video, but Windows codec issues and low-quality frames ca
 - Processes videos: `.mp4`, `.mov`, `.m4v`, `.avi`, `.mkv`.
 - Extracts candidate frames with bundled ffmpeg.
 - Filters frames for blur, exposure problems, and near-duplicates.
+- Advanced processing controls for extraction FPS, quality preset, filter toggles, and max frames per video.
 - Writes `report.html` and `report.json`.
 
 ## Capture Recommendations
@@ -73,10 +74,20 @@ The goal is not a panorama. The goal is enough overlap from different physical c
 1. Open the app.
 2. Choose a source folder containing videos and/or still images.
 3. Review the detected file counts.
-4. Run the prep process.
-5. Import the generated `realityscan_result` folder into RealityScan.
+4. Expand **Advanced processing** only if you need to adjust the defaults.
+5. Run the prep process.
+6. Import the generated `realityscan_result` folder into RealityScan.
 
 RealityScan does not require special filenames for alignment. This app names extracted frames like `videoName_f000123.jpg` so problem frames are easier to trace back.
+
+Advanced processing options:
+
+- `Conservative` keeps more frames for difficult alignment.
+- `Balanced` is the default.
+- `Aggressive` keeps fewer frames when alignment is stable and imports are too large.
+- `Extract FPS` controls how many candidate frames are pulled from each second of video.
+- `Max frames per video` caps output size; use `0` for no cap.
+- Filter toggles can be disabled when you want to inspect almost everything manually.
 
 ## RealityScan Workflow
 

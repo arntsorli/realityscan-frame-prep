@@ -22,6 +22,7 @@ function renderHtml(summary: ProcessingSummary): string {
         <td>${video.rejectedBlur}</td>
         <td>${video.rejectedExposure}</td>
         <td>${video.rejectedDuplicate}</td>
+        <td>${video.rejectedLimit}</td>
         <td>${escapeHtml(video.warnings.join("; "))}</td>
       </tr>`,
     )
@@ -46,6 +47,7 @@ function renderHtml(summary: ProcessingSummary): string {
   <h1>RealityScan Frame Prep Report</h1>
   <p class="meta">Source: ${escapeHtml(summary.sourceFolder)}</p>
   <p class="meta">Output: ${escapeHtml(summary.outputFolder)}</p>
+  <p class="meta">Settings: ${escapeHtml(renderSettings(summary.settings))}</p>
   <p>Copied still images: <strong>${summary.copiedImages}</strong></p>
   ${
     summary.warnings.length > 0
@@ -61,6 +63,7 @@ function renderHtml(summary: ProcessingSummary): string {
         <th>Blur rejects</th>
         <th>Exposure rejects</th>
         <th>Duplicate rejects</th>
+        <th>Limit rejects</th>
         <th>Warnings</th>
       </tr>
     </thead>
@@ -68,6 +71,18 @@ function renderHtml(summary: ProcessingSummary): string {
   </table>
 </body>
 </html>`;
+}
+
+function renderSettings(settings: import("../../shared/types").ProcessingSettings): string {
+  return [
+    `preset=${settings.qualityPreset}`,
+    `fps=${settings.candidateFps}`,
+    `copyStillImages=${settings.copyStillImages}`,
+    `blur=${settings.filterBlur}`,
+    `exposure=${settings.filterExposure}`,
+    `duplicates=${settings.filterDuplicates}`,
+    `maxFramesPerVideo=${settings.maxFramesPerVideo || "none"}`,
+  ].join(", ");
 }
 
 function escapeHtml(value: string): string {

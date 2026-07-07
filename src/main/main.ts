@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from "ele
 import path from "node:path";
 import { scanSourceFolder } from "./processing/fileDiscovery";
 import { processSourceFolder } from "./processing/processor";
-import type { ProcessingProgress } from "../shared/types";
+import type { ProcessingProgress, ProcessingSettings } from "../shared/types";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -64,10 +64,10 @@ ipcMain.handle("folder:select", async () => {
 
 ipcMain.handle("folder:scan", (_event, sourceFolder: string) => scanSourceFolder(sourceFolder));
 
-ipcMain.handle("processing:run", async (event, sourceFolder: string) => {
+ipcMain.handle("processing:run", async (event, sourceFolder: string, settings?: ProcessingSettings) => {
   const sendProgress = (progress: ProcessingProgress) => {
     event.sender.send("processing:progress", progress);
   };
 
-  return processSourceFolder(sourceFolder, sendProgress);
+  return processSourceFolder(sourceFolder, sendProgress, settings);
 });

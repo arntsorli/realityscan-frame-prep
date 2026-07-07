@@ -2,10 +2,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import type {
+  ProcessingSettings,
   ProcessingProgress,
   ProcessingSummary,
   VideoProcessingSummary,
 } from "../../shared/types";
+import { DEFAULT_PROCESSING_SETTINGS } from "../../shared/types";
 import { OUTPUT_FOLDER_NAME, TEMP_FOLDER_NAME } from "./constants";
 import { extractCandidateFrames } from "./ffmpeg";
 import { getOutputFolder, scanSourceFolder } from "./fileDiscovery";
@@ -22,7 +24,9 @@ type ProgressSender = (progress: ProcessingProgress) => void;
 export async function processSourceFolder(
   sourceFolder: string,
   sendProgress: ProgressSender,
+  settingsInput?: ProcessingSettings,
 ): Promise<ProcessingSummary> {
+  const settings = normalizeProcessingSettings(settingsInput);
   const startedAt = new Date().toISOString();
   const scan = await scanSourceFolder(sourceFolder);
   const outputFolder = getOutputFolder(sourceFolder);
@@ -31,21 +35,25 @@ export async function processSourceFolder(
   sendProgress({ stage: "preparing", message: "Preparing output folder" });
   await recreateOutputFolder(sourceFolder, outputFolder);
 
-  sendProgress({
-    stage: "copying-images",
-    message: "Copying still images",
-    current: 0,
-    total: scan.images.length,
-  });
-  for (let index = 0; index < scan.images.length; index += 1) {
-    const image = scan.images[index];
-    await fs.copyFile(image.path, path.join(outputFolder, image.name));
+  let copiedImages = 0;
+  if (settings.copyStillImages) {
     sendProgress({
       stage: "copying-images",
-      message: `Copied ${image.name}`,
-      current: index + 1,
+      message: "Copying still images",
+      current: 0,
       total: scan.images.length,
     });
+    for (let index = 0; index < scan.images.length; index += 1) {
+      const image = scan.images[index];
+      await fs.copyFile(image.path, path.join(outputFolder, image.name));
+      copiedImages += 1;
+      sendProgress({
+        stage: "copying-images",
+        message: `Copied ${image.name}`,
+        current: index + 1,
+        total: scan.images.length,
+      });
+    }
   }
 
   const videoSummaries: VideoProcessingSummary[] = [];
@@ -59,7 +67,9 @@ export async function processSourceFolder(
     });
 
     try {
-      videoSummaries.push(await processVideo(video.path, video.name, outputFolder, sendProgress));
+      videoSummaries.push(
+        await processVideo(video.path, video.name, outputFolder, sendProgress, settings),
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       videoSummaries.push({
@@ -69,6 +79,7 @@ export async function processSourceFolder(
         rejectedBlur: 0,
         rejectedExposure: 0,
         rejectedDuplicate: 0,
+        rejectedLimit: 0,
         warnings: [message],
       });
       warnings.push(`Skipped ${video.name}: ${message}`);
@@ -78,7 +89,8 @@ export async function processSourceFolder(
   const summary: ProcessingSummary = {
     sourceFolder,
     outputFolder,
-    copiedImages: scan.images.length,
+    settings,
+    copiedImages,
     videos: videoSummaries,
     warnings,
     startedAt,
@@ -97,12 +109,17 @@ async function processVideo(
   videoName: string,
   outputFolder: string,
   sendProgress: ProgressSender,
+  settings: ProcessingSettings,
 ): Promise<VideoProcessingSummary> {
   const tempFolder = await fs.mkdtemp(path.join(os.tmpdir(), `${TEMP_FOLDER_NAME}-`));
   const warnings: string[] = [];
 
   try {
-    const { framePaths, stderr } = await extractCandidateFrames(videoPath, tempFolder);
+    const { framePaths, stderr } = await extractCandidateFrames(
+      videoPath,
+      tempFolder,
+      settings.candidateFps,
+    );
     if (stderr.trim().length > 0) {
       warnings.push(stderr.trim());
     }
@@ -119,15 +136,27 @@ async function processVideo(
       metrics.push(await measureFrame(framePath));
     }
 
-    const thresholds = buildAdaptiveThresholds(metrics);
+    const thresholds = buildAdaptiveThresholds(metrics, settings.qualityPreset);
     const keptHashes: string[] = [];
     let keptFrames = 0;
     let rejectedBlur = 0;
     let rejectedExposure = 0;
     let rejectedDuplicate = 0;
+    let rejectedLimit = 0;
 
     for (let index = 0; index < framePaths.length; index += 1) {
-      const decision = decideFrame(metrics[index], thresholds, keptHashes);
+      if (settings.maxFramesPerVideo > 0 && keptFrames >= settings.maxFramesPerVideo) {
+        rejectedLimit += 1;
+        sendProgress({
+          stage: "analyzing-video",
+          message: `Analyzed ${videoName}`,
+          current: index + 1,
+          total: framePaths.length,
+        });
+        continue;
+      }
+
+      const decision = decideFrame(metrics[index], thresholds, keptHashes, settings);
       if (decision.keep) {
         keptFrames += 1;
         keptHashes.push(metrics[index].hash);
@@ -159,6 +188,7 @@ async function processVideo(
       rejectedBlur,
       rejectedExposure,
       rejectedDuplicate,
+      rejectedLimit,
       warnings,
     };
   } finally {
@@ -182,4 +212,30 @@ export async function recreateOutputFolder(
 
   await fs.rm(resolvedOutput, { recursive: true, force: true });
   await fs.mkdir(resolvedOutput, { recursive: true });
+}
+
+function normalizeProcessingSettings(settings?: ProcessingSettings): ProcessingSettings {
+  return {
+    ...DEFAULT_PROCESSING_SETTINGS,
+    ...settings,
+    candidateFps: clampInteger(settings?.candidateFps, 1, 10, DEFAULT_PROCESSING_SETTINGS.candidateFps),
+    maxFramesPerVideo: clampInteger(
+      settings?.maxFramesPerVideo,
+      0,
+      5000,
+      DEFAULT_PROCESSING_SETTINGS.maxFramesPerVideo,
+    ),
+  };
+}
+
+function clampInteger(
+  value: number | undefined,
+  min: number,
+  max: number,
+  fallback: number,
+): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, Math.round(value)));
 }

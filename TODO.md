@@ -14,11 +14,8 @@
   - a 360 object scan
   - a 180 area scan
   - at least one poor-light or fast-movement clip
-- [ ] Tune the frame filtering thresholds from real scan results, especially blur and near-duplicate rejection.
-- [ ] Add processing presets:
-  - `Conservative`: keeps more frames for difficult alignment
-  - `Balanced`: current default
-  - `Aggressive`: fewer frames for faster RealityScan imports
+- [ ] Tune the advanced processing defaults from real scan results, especially preset thresholds and duplicate rejection.
+- [ ] Persist the last used advanced processing settings between app launches.
 - [ ] Add cancellation support while processing long videos.
 - [ ] Add an `Open result folder` button after a successful run.
 - [ ] Add a lightweight review screen for kept/rejected frame samples.
@@ -27,7 +24,7 @@
 ## Later Ideas
 
 - [ ] Optional recursive folder scanning.
-- [ ] Per-video settings such as extraction FPS and max kept frames.
+- [ ] Per-video setting overrides for mixed-quality capture sessions.
 - [ ] A small sample dataset or demo video for regression testing.
 - [ ] A tagged release workflow once the app has been tested on real footage.
 

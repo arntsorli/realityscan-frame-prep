@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import type { ProcessingSettings, QualityPreset } from "../../shared/types";
 
 export interface FrameMetrics {
   sharpness: number;
@@ -60,35 +61,36 @@ export async function measureFrame(imagePath: string): Promise<FrameMetrics> {
   };
 }
 
-export function buildAdaptiveThresholds(metrics: FrameMetrics[]): QualityThresholds {
+export function buildAdaptiveThresholds(
+  metrics: FrameMetrics[],
+  preset: QualityPreset,
+): QualityThresholds {
   if (metrics.length === 0) {
-    return defaultThresholds();
+    return presetThresholds(preset, 25);
   }
 
   const sharpnessValues = metrics.map((metric) => metric.sharpness).sort((a, b) => a - b);
   const medianSharpness = sharpnessValues[Math.floor(sharpnessValues.length / 2)] ?? 30;
 
-  return {
-    ...defaultThresholds(),
-    minSharpness: Math.max(18, Math.min(80, medianSharpness * 0.45)),
-  };
+  return presetThresholds(preset, medianSharpness);
 }
 
 export function decideFrame(
   metrics: FrameMetrics,
   thresholds: QualityThresholds,
   previousKeptHashes: string[],
+  settings: ProcessingSettings,
 ): FrameDecision {
-  if (metrics.sharpness < thresholds.minSharpness) {
+  if (settings.filterBlur && metrics.sharpness < thresholds.minSharpness) {
     return { keep: false, reason: "blur" };
   }
 
-  if (
+  if (settings.filterExposure && (
     metrics.brightness < thresholds.minBrightness ||
     metrics.brightness > thresholds.maxBrightness ||
     metrics.darkRatio > thresholds.maxDarkRatio ||
     metrics.brightRatio > thresholds.maxBrightRatio
-  ) {
+  )) {
     return { keep: false, reason: "exposure" };
   }
 
@@ -96,7 +98,7 @@ export function decideFrame(
     .slice(-4)
     .some((hash) => hammingDistance(hash, metrics.hash) < thresholds.minHashDistance);
 
-  if (isDuplicate) {
+  if (settings.filterDuplicates && isDuplicate) {
     return { keep: false, reason: "duplicate" };
   }
 
@@ -114,9 +116,31 @@ export function hammingDistance(left: string, right: string): number {
   return distance;
 }
 
-function defaultThresholds(): QualityThresholds {
+function presetThresholds(preset: QualityPreset, medianSharpness: number): QualityThresholds {
+  if (preset === "conservative") {
+    return {
+      minSharpness: Math.max(12, Math.min(55, medianSharpness * 0.32)),
+      minBrightness: 25,
+      maxBrightness: 235,
+      maxDarkRatio: 0.82,
+      maxBrightRatio: 0.62,
+      minHashDistance: 4,
+    };
+  }
+
+  if (preset === "aggressive") {
+    return {
+      minSharpness: Math.max(28, Math.min(100, medianSharpness * 0.62)),
+      minBrightness: 45,
+      maxBrightness: 215,
+      maxDarkRatio: 0.55,
+      maxBrightRatio: 0.32,
+      minHashDistance: 11,
+    };
+  }
+
   return {
-    minSharpness: 25,
+    minSharpness: Math.max(18, Math.min(80, medianSharpness * 0.45)),
     minBrightness: 35,
     maxBrightness: 225,
     maxDarkRatio: 0.7,

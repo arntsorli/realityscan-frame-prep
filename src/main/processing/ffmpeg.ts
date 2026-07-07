@@ -2,7 +2,6 @@ import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
-import { CANDIDATE_FPS } from "./constants";
 
 export interface ExtractFramesResult {
   framePaths: string[];
@@ -22,6 +21,7 @@ export async function assertFfmpegAvailable(): Promise<string> {
 export async function extractCandidateFrames(
   videoPath: string,
   outputFolder: string,
+  candidateFps: number,
 ): Promise<ExtractFramesResult> {
   await fs.mkdir(outputFolder, { recursive: true });
   const outputPattern = path.join(outputFolder, "candidate_%06d.jpg");
@@ -34,7 +34,7 @@ export async function extractCandidateFrames(
     "-i",
     videoPath,
     "-vf",
-    `fps=${CANDIDATE_FPS}`,
+    `fps=${candidateFps}`,
     "-q:v",
     "2",
     outputPattern,
