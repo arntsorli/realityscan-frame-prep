@@ -6,6 +6,12 @@ import type { ProcessingProgress, ProcessingSettings } from "../shared/types";
 
 let mainWindow: BrowserWindow | null = null;
 
+function getWindowIconPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "app-icon.ico")
+    : path.join(process.cwd(), "build", "app-icon.ico");
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1120,
@@ -13,7 +19,8 @@ function createWindow() {
     minWidth: 900,
     minHeight: 620,
     title: "RealityScan Frame Prep",
-    backgroundColor: "#f6f5ef",
+    backgroundColor: "#06111a",
+    icon: getWindowIconPath(),
     webPreferences: {
       preload: path.join(__dirname, "../main/preload.js"),
       contextIsolation: true,

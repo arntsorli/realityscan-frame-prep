@@ -51,11 +51,18 @@
       "node_modules/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "build/app-icon.ico",
+        "to": "app-icon.ico"
+      }
+    ],
     "asarUnpack": [
       "node_modules/@ffmpeg-installer/**/*",
       "node_modules/sharp/**/*"
     ],
     "win": {
+      "icon": "build/app-icon.ico",
       "target": [
         "portable"
       ]
