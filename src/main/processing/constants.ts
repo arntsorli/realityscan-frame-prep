@@ -18,3 +18,11 @@ export const supportedVideoExtensions = new Set([
   ".avi",
   ".mkv",
 ]);
+
+export const ignoredMetadataFilenames = new Set([
+  ".ds_store",
+  ".localized",
+  "desktop.ini",
+  "ehthumbs.db",
+  "thumbs.db",
+]);

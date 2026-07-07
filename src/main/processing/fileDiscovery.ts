@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import type { FolderScan, SourceFile } from "../../shared/types";
 import {
+  ignoredMetadataFilenames,
   OUTPUT_FOLDER_NAME,
   supportedImageExtensions,
   supportedVideoExtensions,
@@ -23,7 +24,7 @@ export async function scanSourceFolder(sourceFolder: string): Promise<FolderScan
   const entries = await fs.readdir(sourceFolder, { withFileTypes: true });
   const images: SourceFile[] = [];
   const videos: SourceFile[] = [];
-  let unsupportedCount = 0;
+  const unsupportedFiles: SourceFile[] = [];
   let hasExistingOutput = false;
 
   for (const entry of entries) {
@@ -36,15 +37,21 @@ export async function scanSourceFolder(sourceFolder: string): Promise<FolderScan
       continue;
     }
 
+    if (isIgnoredMetadataFile(entry.name)) {
+      continue;
+    }
+
     const sourceFile = toSourceFile(sourceFolder, entry.name);
     if (supportedImageExtensions.has(sourceFile.extension)) {
       images.push(sourceFile);
     } else if (supportedVideoExtensions.has(sourceFile.extension)) {
       videos.push(sourceFile);
     } else {
-      unsupportedCount += 1;
+      unsupportedFiles.push(sourceFile);
     }
   }
+
+  const sortedUnsupportedFiles = unsupportedFiles.sort((a, b) => a.name.localeCompare(b.name));
 
   return {
     sourceFolder,
@@ -52,6 +59,12 @@ export async function scanSourceFolder(sourceFolder: string): Promise<FolderScan
     hasExistingOutput,
     images: images.sort((a, b) => a.name.localeCompare(b.name)),
     videos: videos.sort((a, b) => a.name.localeCompare(b.name)),
-    unsupportedCount,
+    unsupportedFiles: sortedUnsupportedFiles,
+    unsupportedCount: sortedUnsupportedFiles.length,
   };
+}
+
+function isIgnoredMetadataFile(name: string): boolean {
+  const normalized = name.toLowerCase();
+  return ignoredMetadataFilenames.has(normalized) || normalized.startsWith("._");
 }

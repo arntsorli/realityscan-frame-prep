@@ -25,6 +25,7 @@ export interface FolderScan {
   hasExistingOutput: boolean;
   images: SourceFile[];
   videos: SourceFile[];
+  unsupportedFiles: SourceFile[];
   unsupportedCount: number;
 }
 

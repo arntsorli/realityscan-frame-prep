@@ -27,8 +27,23 @@ describe("scanSourceFolder", () => {
     expect(scan.images.map((file) => file.name)).toEqual(["photo.JPG"]);
     expect(scan.videos.map((file) => file.name)).toEqual(["clip.mp4"]);
     expect(scan.unsupportedCount).toBe(1);
+    expect(scan.unsupportedFiles.map((file) => file.name)).toEqual(["notes.txt"]);
     expect(scan.hasExistingOutput).toBe(false);
     expect(scan.outputFolder).toBe(getOutputFolder(tempDir));
+  });
+
+  it("ignores common hidden metadata files instead of reporting unsupported files", async () => {
+    await fs.writeFile(path.join(tempDir, "photo.jpg"), "image");
+    await fs.writeFile(path.join(tempDir, "desktop.ini"), "metadata");
+    await fs.writeFile(path.join(tempDir, "Thumbs.db"), "metadata");
+    await fs.writeFile(path.join(tempDir, ".DS_Store"), "metadata");
+    await fs.writeFile(path.join(tempDir, "._photo.jpg"), "metadata");
+
+    const scan = await scanSourceFolder(tempDir);
+
+    expect(scan.images.map((file) => file.name)).toEqual(["photo.jpg"]);
+    expect(scan.unsupportedCount).toBe(0);
+    expect(scan.unsupportedFiles).toEqual([]);
   });
 
   it("detects an existing generated output folder without counting its contents", async () => {
@@ -41,5 +56,6 @@ describe("scanSourceFolder", () => {
     expect(scan.images).toEqual([]);
     expect(scan.videos).toEqual([]);
     expect(scan.unsupportedCount).toBe(0);
+    expect(scan.unsupportedFiles).toEqual([]);
   });
 });

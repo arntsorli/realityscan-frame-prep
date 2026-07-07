@@ -28,6 +28,14 @@ export function App() {
     return scan.images.length + scan.videos.length;
   }, [scan]);
 
+  const unsupportedTooltip = useMemo(() => {
+    if (!scan || scan.unsupportedFiles.length === 0) {
+      return "No unsupported files found.";
+    }
+
+    return `Unsupported files:\n${scan.unsupportedFiles.map((file) => file.name).join("\n")}`;
+  }, [scan]);
+
   async function chooseFolder() {
     setError(null);
     setSummary(null);
@@ -89,7 +97,7 @@ export function App() {
           <div className="stats-row">
             <Stat label="Still images" value={scan?.images.length ?? 0} />
             <Stat label="Videos" value={scan?.videos.length ?? 0} />
-            <Stat label="Unsupported" value={scan?.unsupportedCount ?? 0} />
+            <Stat label="Unsupported" value={scan?.unsupportedCount ?? 0} title={unsupportedTooltip} />
             <Stat label="Total inputs" value={totalInputs} />
           </div>
 
@@ -152,9 +160,9 @@ function InfoBlock({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({ label, value, title }: { label: string; value: number; title?: string }) {
   return (
-    <div className="stat">
+    <div className="stat" title={title}>
       <strong>{value}</strong>
       <span>{label}</span>
     </div>
