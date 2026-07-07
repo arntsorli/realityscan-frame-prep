@@ -4,6 +4,14 @@ Windows desktop app for preparing Samsung phone videos and still images for Real
 
 The app creates a clean `realityscan_result` folder from a selected source folder. It copies existing still images, extracts frames from videos, filters weak frames, and writes a report so the folder can be imported into RealityScan as ordinary images.
 
+## Download
+
+Download the latest portable Windows `.exe` from the GitHub releases page:
+
+https://github.com/arntsorli/realityscan-frame-prep/releases/tag/latest
+
+This build is produced automatically from the latest successful code build on `main`.
+
 ## Why
 
 RealityScan can import video, but Windows codec issues and low-quality frames can make alignment harder than it needs to be. This tool keeps the process local and prepares a smaller, cleaner image set for photogrammetry.
@@ -193,7 +201,7 @@ Build output is written to `release/`.
 
 ## CI
 
-GitHub Actions runs on pushes and pull requests to `main`. The Windows workflow installs dependencies, runs typecheck, lint, tests, builds the portable app, and uploads the build artifact.
+GitHub Actions runs on code-related pushes and pull requests to `main`. The Windows workflow installs dependencies, runs typecheck, lint, tests, builds the portable app, uploads the build artifact, and updates the `latest` GitHub Release on successful pushes to `main`.
 
 ## Project Tasks
 

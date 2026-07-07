@@ -29,6 +29,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -60,3 +62,44 @@ jobs:
         with:
           name: RealityScan-Frame-Prep-Windows
           path: release/*
+
+      - name: Publish latest download
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $asset = Get-ChildItem -Path release -Filter "*.exe" | Select-Object -First 1
+          if (-not $asset) {
+            throw "No Windows executable found in release output."
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f latest
+          git push --force origin latest
+
+          $body = @"
+          Latest successful Windows build from main.
+
+          Commit: $env:GITHUB_SHA
+
+          Download the portable `.exe` from the assets below.
+          "@
+
+          gh release view latest *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create latest `
+              --title "Latest Windows build" `
+              --notes $body `
+              --target $env:GITHUB_SHA `
+              --latest
+          } else {
+            gh release edit latest `
+              --title "Latest Windows build" `
+              --notes $body `
+              --target $env:GITHUB_SHA `
+              --latest
+          }
+
+          gh release upload latest $asset.FullName --clobber
