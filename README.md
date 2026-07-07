@@ -78,9 +78,7 @@ Build output is written to `release/`.
 
 ## CI
 
-The Windows GitHub Actions workflow template is tracked at `docs/github-actions-windows.yml`.
-
-The intended live path is `.github/workflows/windows.yml`, but GitHub requires the authenticated token to have `workflow` scope before a workflow can be pushed. See `TODO.md` for the exact follow-up command sequence.
+GitHub Actions runs on pushes and pull requests to `main`. The Windows workflow installs dependencies, runs typecheck, lint, tests, builds the portable app, and uploads the build artifact.
 
 ## Project Tasks
 
