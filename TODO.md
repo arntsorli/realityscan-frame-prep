@@ -5,7 +5,7 @@
 - Local repo: `C:\Repos\realityscan-frame-prep`
 - GitHub repo: `https://github.com/arntsorli/realityscan-frame-prep`
 - Current app: Electron + React + TypeScript + bundled ffmpeg + sharp
-- CI: GitHub Actions Windows build is active and passing
+- CI: GitHub Actions Windows build and versioned release publishing are active
 - Output folder: `<source>\realityscan_result`
 
 ## Next Priorities
@@ -18,6 +18,7 @@
 - [ ] Persist the last used advanced processing settings between app launches.
 - [ ] Add cancellation support while processing long videos.
 - [ ] Add an `Open result folder` button after a successful run.
+- [ ] Add a link from the app version label to the GitHub releases page.
 - [ ] Add a lightweight review screen for kept/rejected frame samples.
 - [ ] Add a custom app icon before sharing builds more broadly.
 
@@ -26,7 +27,6 @@
 - [ ] Optional recursive folder scanning.
 - [ ] Per-video setting overrides for mixed-quality capture sessions.
 - [ ] A small sample dataset or demo video for regression testing.
-- [ ] A tagged release workflow once the app has been tested on real footage.
 
 ## Useful Commands
 

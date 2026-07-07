@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
+  AppInfo,
   FolderScan,
   ProcessingProgress,
   ProcessingSettings,
@@ -8,6 +9,7 @@ import type {
 } from "../shared/types";
 
 const api: RealityScanFramePrepApi = {
+  getAppInfo: () => ipcRenderer.invoke("app:get-info") as Promise<AppInfo>,
   selectSourceFolder: () => ipcRenderer.invoke("folder:select") as Promise<FolderScan | null>,
   scanFolder: (sourceFolder: string) =>
     ipcRenderer.invoke("folder:scan", sourceFolder) as Promise<FolderScan>,

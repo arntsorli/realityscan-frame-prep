@@ -8,9 +8,9 @@ The app creates a clean `realityscan_result` folder from a selected source folde
 
 Download the latest portable Windows `.exe` from the GitHub releases page:
 
-https://github.com/arntsorli/realityscan-frame-prep/releases/tag/latest
+https://github.com/arntsorli/realityscan-frame-prep/releases/latest
 
-This build is produced automatically from the latest successful code build on `main`.
+Each successful code build on `main` creates a versioned release like `v0.1.23` with generated notes from the commit diff since the previous release. The app shows its version in the main window so users can compare it with the release page.
 
 ## Why
 
@@ -201,7 +201,7 @@ Build output is written to `release/`.
 
 ## CI
 
-GitHub Actions runs on code-related pushes and pull requests to `main`. The Windows workflow installs dependencies, runs typecheck, lint, tests, builds the portable app, uploads the build artifact, and updates the `latest` GitHub Release on successful pushes to `main`.
+GitHub Actions runs on code-related pushes and pull requests to `main`. The Windows workflow installs dependencies, runs typecheck, lint, tests, builds the portable app, uploads the build artifact, and creates a versioned GitHub Release with generated notes on successful pushes to `main`.
 
 ## Project Tasks
 

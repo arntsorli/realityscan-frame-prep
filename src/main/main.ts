@@ -46,6 +46,10 @@ app.on("window-all-closed", () => {
   }
 });
 
+ipcMain.handle("app:get-info", () => ({
+  version: app.getVersion(),
+}));
+
 ipcMain.handle("folder:select", async () => {
   const options: OpenDialogOptions = {
     title: "Choose scan source folder",

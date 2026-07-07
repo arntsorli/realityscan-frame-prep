@@ -45,6 +45,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set build version
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        run: |
+          $version = "0.1.${{ github.run_number }}"
+          npm version $version --no-git-tag-version --allow-same-version
+          "APP_VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Set pull request build version
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        shell: pwsh
+        run: |
+          "APP_VERSION=0.1.0" >> $env:GITHUB_ENV
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -60,10 +74,10 @@ jobs:
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RealityScan-Frame-Prep-Windows
+          name: RealityScan-Frame-Prep-Windows-${{ env.APP_VERSION }}
           path: release/*
 
-      - name: Publish latest download
+      - name: Publish versioned release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: pwsh
         env:
@@ -74,32 +88,26 @@ jobs:
             throw "No Windows executable found in release output."
           }
 
+          $tag = "v$env:APP_VERSION"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -f latest
-          git push --force origin latest
 
           $body = @"
-          Latest successful Windows build from main.
+          Automated Windows build from main.
 
           Commit: $env:GITHUB_SHA
 
-          Download the portable `.exe` from the assets below.
+          Download the portable `.exe` from the assets below. See the generated notes for changes since the previous release.
           "@
 
-          gh release view latest *> $null
+          gh release view $tag *> $null
           if ($LASTEXITCODE -ne 0) {
-            gh release create latest `
-              --title "Latest Windows build" `
+            gh release create $tag `
+              --title "RealityScan Frame Prep $tag" `
               --notes $body `
               --target $env:GITHUB_SHA `
-              --latest
-          } else {
-            gh release edit latest `
-              --title "Latest Windows build" `
-              --notes $body `
-              --target $env:GITHUB_SHA `
+              --generate-notes `
               --latest
           }
 
-          gh release upload latest $asset.FullName --clobber
+          gh release upload $tag $asset.FullName --clobber

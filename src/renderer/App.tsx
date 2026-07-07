@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type {
+  AppInfo,
   FolderScan,
   ProcessingSettings,
   ProcessingProgress,
@@ -19,9 +20,14 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [settings, setSettings] = useState<ProcessingSettings>(DEFAULT_PROCESSING_SETTINGS);
+  const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 
   useEffect(() => {
     return window.realityScanFramePrep.onProgress(setProgress);
+  }, []);
+
+  useEffect(() => {
+    void window.realityScanFramePrep.getAppInfo().then(setAppInfo);
   }, []);
 
   const totalInputs = useMemo(() => {
@@ -85,6 +91,7 @@ export function App() {
           <div>
             <p className="eyebrow">Local photogrammetry prep</p>
             <h1>RealityScan Frame Prep</h1>
+            {appInfo ? <p className="version-label">Version {appInfo.version}</p> : null}
           </div>
           <button className="primary-button" onClick={chooseFolder} disabled={isRunning}>
             Choose folder

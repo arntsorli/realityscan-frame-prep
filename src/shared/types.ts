@@ -90,7 +90,12 @@ export interface ProcessingSummary {
   finishedAt: string;
 }
 
+export interface AppInfo {
+  version: string;
+}
+
 export interface RealityScanFramePrepApi {
+  getAppInfo: () => Promise<AppInfo>;
   selectSourceFolder: () => Promise<FolderScan | null>;
   scanFolder: (sourceFolder: string) => Promise<FolderScan>;
   runProcessing: (
