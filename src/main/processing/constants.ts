@@ -10,13 +10,7 @@ export const supportedImageExtensions = new Set([
   ".tiff",
 ]);
 
-export const supportedVideoExtensions = new Set([
-  ".mp4",
-  ".mov",
-  ".m4v",
-  ".avi",
-  ".mkv",
-]);
+export const supportedVideoExtensions = new Set([".mp4", ".mov", ".m4v", ".avi", ".mkv"]);
 
 export const ignoredMetadataFilenames = new Set([
   ".ds_store",

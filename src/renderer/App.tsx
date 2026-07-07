@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import type {
   AppInfo,
   FolderScan,
-  ProcessingSettings,
   ProcessingProgress,
+  ProcessingSettings,
   ProcessingSummary,
 } from "../shared/types";
 import { DEFAULT_PROCESSING_SETTINGS } from "../shared/types";
@@ -97,7 +97,12 @@ export function App() {
               {appInfo ? <p className="version-label">Version {appInfo.version}</p> : null}
             </div>
           </div>
-          <button className="primary-button" onClick={chooseFolder} disabled={isRunning}>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={chooseFolder}
+            disabled={isRunning}
+          >
             Choose folder
           </button>
         </header>
@@ -111,19 +116,20 @@ export function App() {
           <div className="stats-row">
             <Stat label="Still images" value={scan?.images.length ?? 0} />
             <Stat label="Videos" value={scan?.videos.length ?? 0} />
-            <Stat label="Unsupported" value={scan?.unsupportedCount ?? 0} title={unsupportedTooltip} />
+            <Stat
+              label="Unsupported"
+              value={scan?.unsupportedCount ?? 0}
+              title={unsupportedTooltip}
+            />
             <Stat label="Total inputs" value={totalInputs} />
           </div>
 
-          <AdvancedSettings
-            settings={settings}
-            onChange={setSettings}
-            disabled={isRunning}
-          />
+          <AdvancedSettings settings={settings} onChange={setSettings} disabled={isRunning} />
 
           <div className="run-row">
             <button
               className="run-button"
+              type="button"
               onClick={runProcessing}
               disabled={!scan || totalInputs === 0 || isRunning}
             >
@@ -161,7 +167,12 @@ function OverwriteWarningIcon() {
     "Existing realityscan_result inside the selected folder will be deleted before processing.";
 
   return (
-    <span className="overwrite-warning-icon" title={warningText} aria-label={warningText}>
+    <span
+      className="overwrite-warning-icon"
+      role="img"
+      title={warningText}
+      aria-label={warningText}
+    >
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M12 3.2 22 20H2L12 3.2Z" />
         <path d="M12 8.4v5.2" />
@@ -258,7 +269,6 @@ function AdvancedSettings({
           />
         </div>
       </div>
-
     </details>
   );
 }
@@ -312,10 +322,7 @@ function Stat({ label, value, title }: { label: string; value: number; title?: s
 
 function SummaryPanel({ summary }: { summary: ProcessingSummary }) {
   const kept = summary.videos.reduce((total, video) => total + video.keptFrames, 0);
-  const candidates = summary.videos.reduce(
-    (total, video) => total + video.extractedCandidates,
-    0,
-  );
+  const candidates = summary.videos.reduce((total, video) => total + video.extractedCandidates, 0);
 
   return (
     <section className="panel">

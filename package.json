@@ -12,7 +12,10 @@
     "build:dir": "npm run typecheck && vite build && tsc -p tsconfig.electron.json && electron-builder --win dir --publish never",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "test": "vitest run",
-    "lint": "eslint .",
+    "lint": "eslint . && biome check .",
+    "format": "biome format --write .",
+    "fix": "biome check --write .",
+    "security:audit": "npm audit --audit-level=moderate",
     "ci": "npm run typecheck && npm run lint && npm run test"
   },
   "dependencies": {
@@ -23,6 +26,7 @@
     "sharp": "^0.34.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.2",
     "@eslint/js": "^9.32.0",
     "@types/node": "^24.2.0",
     "@types/react": "^19.1.9",

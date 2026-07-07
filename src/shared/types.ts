@@ -1,17 +1,6 @@
-export type SupportedImageExtension =
-  | ".jpg"
-  | ".jpeg"
-  | ".png"
-  | ".webp"
-  | ".tif"
-  | ".tiff";
+export type SupportedImageExtension = ".jpg" | ".jpeg" | ".png" | ".webp" | ".tif" | ".tiff";
 
-export type SupportedVideoExtension =
-  | ".mp4"
-  | ".mov"
-  | ".m4v"
-  | ".avi"
-  | ".mkv";
+export type SupportedVideoExtension = ".mp4" | ".mov" | ".m4v" | ".avi" | ".mkv";
 
 export interface SourceFile {
   path: string;

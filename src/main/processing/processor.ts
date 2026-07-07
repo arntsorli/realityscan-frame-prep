@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
-import path from "node:path";
 import os from "node:os";
+import path from "node:path";
 import type {
-  ProcessingSettings,
   ProcessingProgress,
+  ProcessingSettings,
   ProcessingSummary,
   VideoProcessingSummary,
 } from "../../shared/types";
@@ -12,11 +12,7 @@ import { OUTPUT_FOLDER_NAME, TEMP_FOLDER_NAME } from "./constants";
 import { extractCandidateFrames } from "./ffmpeg";
 import { getOutputFolder, scanSourceFolder } from "./fileDiscovery";
 import { frameOutputName } from "./naming";
-import {
-  buildAdaptiveThresholds,
-  decideFrame,
-  measureFrame,
-} from "./quality";
+import { buildAdaptiveThresholds, decideFrame, measureFrame } from "./quality";
 import { writeReports } from "./report";
 
 type ProgressSender = (progress: ProcessingProgress) => void;
@@ -160,7 +156,10 @@ async function processVideo(
       if (decision.keep) {
         keptFrames += 1;
         keptHashes.push(metrics[index].hash);
-        await fs.copyFile(framePaths[index], path.join(outputFolder, frameOutputName(videoName, index + 1)));
+        await fs.copyFile(
+          framePaths[index],
+          path.join(outputFolder, frameOutputName(videoName, index + 1)),
+        );
       } else if (decision.reason === "blur") {
         rejectedBlur += 1;
       } else if (decision.reason === "exposure") {
@@ -218,7 +217,12 @@ function normalizeProcessingSettings(settings?: ProcessingSettings): ProcessingS
   return {
     ...DEFAULT_PROCESSING_SETTINGS,
     ...settings,
-    candidateFps: clampInteger(settings?.candidateFps, 1, 10, DEFAULT_PROCESSING_SETTINGS.candidateFps),
+    candidateFps: clampInteger(
+      settings?.candidateFps,
+      1,
+      10,
+      DEFAULT_PROCESSING_SETTINGS.candidateFps,
+    ),
     maxFramesPerVideo: clampInteger(
       settings?.maxFramesPerVideo,
       0,

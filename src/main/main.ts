@@ -1,8 +1,8 @@
-import { app, BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from "electron";
 import path from "node:path";
+import { app, BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from "electron";
+import type { ProcessingProgress, ProcessingSettings } from "../shared/types";
 import { scanSourceFolder } from "./processing/fileDiscovery";
 import { processSourceFolder } from "./processing/processor";
-import type { ProcessingProgress, ProcessingSettings } from "../shared/types";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -75,10 +75,13 @@ ipcMain.handle("folder:select", async () => {
 
 ipcMain.handle("folder:scan", (_event, sourceFolder: string) => scanSourceFolder(sourceFolder));
 
-ipcMain.handle("processing:run", async (event, sourceFolder: string, settings?: ProcessingSettings) => {
-  const sendProgress = (progress: ProcessingProgress) => {
-    event.sender.send("processing:progress", progress);
-  };
+ipcMain.handle(
+  "processing:run",
+  async (event, sourceFolder: string, settings?: ProcessingSettings) => {
+    const sendProgress = (progress: ProcessingProgress) => {
+      event.sender.send("processing:progress", progress);
+    };
 
-  return processSourceFolder(sourceFolder, sendProgress, settings);
-});
+    return processSourceFolder(sourceFolder, sendProgress, settings);
+  },
+);

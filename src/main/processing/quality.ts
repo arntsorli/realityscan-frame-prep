@@ -85,12 +85,13 @@ export function decideFrame(
     return { keep: false, reason: "blur" };
   }
 
-  if (settings.filterExposure && (
-    metrics.brightness < thresholds.minBrightness ||
-    metrics.brightness > thresholds.maxBrightness ||
-    metrics.darkRatio > thresholds.maxDarkRatio ||
-    metrics.brightRatio > thresholds.maxBrightRatio
-  )) {
+  if (
+    settings.filterExposure &&
+    (metrics.brightness < thresholds.minBrightness ||
+      metrics.brightness > thresholds.maxBrightness ||
+      metrics.darkRatio > thresholds.maxDarkRatio ||
+      metrics.brightRatio > thresholds.maxBrightRatio)
+  ) {
     return { keep: false, reason: "exposure" };
   }
 
