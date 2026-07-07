@@ -7,6 +7,7 @@ import type {
   ProcessingSummary,
 } from "../shared/types";
 import { DEFAULT_PROCESSING_SETTINGS } from "../shared/types";
+import appIcon from "./assets/app-icon.png";
 
 const initialProgress: ProcessingProgress = {
   stage: "idle",
@@ -88,10 +89,13 @@ export function App() {
     <main className="app-shell">
       <section className="workspace">
         <header className="topbar">
-          <div>
-            <p className="eyebrow">Local photogrammetry prep</p>
-            <h1>RealityScan Frame Prep</h1>
-            {appInfo ? <p className="version-label">Version {appInfo.version}</p> : null}
+          <div className="brand-row">
+            <img className="app-icon" src={appIcon} alt="" aria-hidden="true" />
+            <div>
+              <p className="eyebrow">Local photogrammetry prep</p>
+              <h1>RealityScan Frame Prep</h1>
+              {appInfo ? <p className="version-label">Version {appInfo.version}</p> : null}
+            </div>
           </div>
           <button className="primary-button" onClick={chooseFolder} disabled={isRunning}>
             Choose folder
@@ -255,10 +259,6 @@ function AdvancedSettings({
         </div>
       </div>
 
-      <p className="advanced-hint">
-        Use Conservative when RealityScan has trouble aligning. Use Aggressive when alignment is
-        stable and imports are too large. Set max frames to 0 for no cap.
-      </p>
     </details>
   );
 }
