@@ -27,6 +27,19 @@ describe("scanSourceFolder", () => {
     expect(scan.images.map((file) => file.name)).toEqual(["photo.JPG"]);
     expect(scan.videos.map((file) => file.name)).toEqual(["clip.mp4"]);
     expect(scan.unsupportedCount).toBe(1);
+    expect(scan.hasExistingOutput).toBe(false);
     expect(scan.outputFolder).toBe(getOutputFolder(tempDir));
+  });
+
+  it("detects an existing generated output folder without counting its contents", async () => {
+    await fs.mkdir(path.join(tempDir, "realityscan_result"));
+    await fs.writeFile(path.join(tempDir, "realityscan_result", "old.jpg"), "image");
+
+    const scan = await scanSourceFolder(tempDir);
+
+    expect(scan.hasExistingOutput).toBe(true);
+    expect(scan.images).toEqual([]);
+    expect(scan.videos).toEqual([]);
+    expect(scan.unsupportedCount).toBe(0);
   });
 });

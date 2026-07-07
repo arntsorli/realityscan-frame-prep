@@ -24,8 +24,14 @@ export async function scanSourceFolder(sourceFolder: string): Promise<FolderScan
   const images: SourceFile[] = [];
   const videos: SourceFile[] = [];
   let unsupportedCount = 0;
+  let hasExistingOutput = false;
 
   for (const entry of entries) {
+    if (entry.name === OUTPUT_FOLDER_NAME) {
+      hasExistingOutput = true;
+      continue;
+    }
+
     if (!entry.isFile()) {
       continue;
     }
@@ -43,6 +49,7 @@ export async function scanSourceFolder(sourceFolder: string): Promise<FolderScan
   return {
     sourceFolder,
     outputFolder: getOutputFolder(sourceFolder),
+    hasExistingOutput,
     images: images.sort((a, b) => a.name.localeCompare(b.name)),
     videos: videos.sort((a, b) => a.name.localeCompare(b.name)),
     unsupportedCount,

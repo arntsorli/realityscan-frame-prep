@@ -93,18 +93,16 @@ export function App() {
             <Stat label="Total inputs" value={totalInputs} />
           </div>
 
-          <div className="warning">
-            Existing <code>realityscan_result</code> inside the selected folder will be deleted
-            before each run.
+          <div className="run-row">
+            <button
+              className="run-button"
+              onClick={runProcessing}
+              disabled={!scan || totalInputs === 0 || isRunning}
+            >
+              {isRunning ? "Processing..." : "Prepare RealityScan folder"}
+            </button>
+            {scan?.hasExistingOutput ? <OverwriteWarningIcon /> : null}
           </div>
-
-          <button
-            className="run-button"
-            onClick={runProcessing}
-            disabled={!scan || totalInputs === 0 || isRunning}
-          >
-            {isRunning ? "Processing..." : "Prepare RealityScan folder"}
-          </button>
         </section>
 
         <section className="panel progress-panel">
@@ -127,6 +125,21 @@ export function App() {
         {summary ? <SummaryPanel summary={summary} /> : null}
       </section>
     </main>
+  );
+}
+
+function OverwriteWarningIcon() {
+  const warningText =
+    "Existing realityscan_result inside the selected folder will be deleted before processing.";
+
+  return (
+    <span className="overwrite-warning-icon" title={warningText} aria-label={warningText}>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3.2 22 20H2L12 3.2Z" />
+        <path d="M12 8.4v5.2" />
+        <path d="M12 17.2h.01" />
+      </svg>
+    </span>
   );
 }
 

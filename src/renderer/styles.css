@@ -157,11 +157,35 @@ h2 {
   color: #fffdf6;
 }
 
+.run-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .run-button {
-  width: 100%;
+  flex: 1;
   padding: 15px 20px;
   background: #bf5f32;
   color: white;
+}
+
+.overwrite-warning-icon {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: #9a5a16;
+}
+
+.overwrite-warning-icon svg {
+  width: 26px;
+  height: 26px;
+  fill: #fff4d6;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
 }
 
 .primary-button:disabled,

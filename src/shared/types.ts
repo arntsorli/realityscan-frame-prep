@@ -22,6 +22,7 @@ export interface SourceFile {
 export interface FolderScan {
   sourceFolder: string;
   outputFolder: string;
+  hasExistingOutput: boolean;
   images: SourceFile[];
   videos: SourceFile[];
   unsupportedCount: number;
