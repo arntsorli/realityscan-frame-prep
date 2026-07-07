@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist-electron/
+release/
+coverage/
+.vite/
+.env
+*.log
+realityscan_result/
+tmp/
+*.tsbuildinfo
