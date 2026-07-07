@@ -66,6 +66,7 @@
       "node_modules/sharp/**/*"
     ],
     "win": {
+      "artifactName": "${productName}.${ext}",
       "icon": "build/app-icon.ico",
       "target": [
         "portable"
